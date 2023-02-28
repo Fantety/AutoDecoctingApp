@@ -37,7 +37,6 @@ Window {
             id: view;
             currentIndex: pageIndicator.currentIndex;
             anchors.fill: parent;
-
             Page {
                 HomePage{
                     anchors.centerIn: parent;
@@ -45,7 +44,10 @@ Window {
                 }
             }
             Page {
-                title: qsTr("Discover");
+                BluetoothPage{
+                    anchors.horizontalCenter:parent.horizontalCenter;
+                    id: blue_tooth_page;
+                }
             }
             Page {
                 title: qsTr("Activity");
