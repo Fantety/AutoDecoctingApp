@@ -9,7 +9,8 @@ QT += core quick virtualkeyboard gui qml quickcontrols2 bluetooth
 
 SOURCES += \
         main.cpp \
-        src/BluetoothSearch.cpp
+        src/BluetoothSearch.cpp \
+        src/bleinterface.cpp
 
 RESOURCES += qml.qrc
 
@@ -25,4 +26,6 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
-    src/BluetoothSearch.h
+    src/BluetoothSearch.h \
+    src/bleinterface.h \
+    src/qqmlhelpers.h

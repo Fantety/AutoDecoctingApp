@@ -5,45 +5,36 @@ import com.qt.bluetoothsearch 1.0
 
 Item {
     anchors.topMargin: 100;
-
     signal on_search_blue_tooth_button_clicked()
-    Rectangle{
-        id: bluetooth_page_rectangle;
-        Column{
-            id: bluetooth_page_colume;
-            anchors.centerIn: parent;
-            anchors.topMargin: 100;
-            Row{
-                id: bluetooth_page_row;
-
-                Label{
-                    id: open_bluetooth_label;
-                    anchors.verticalCenter:parent.verticalCenter;
-                    text:"开启蓝牙";
-                    color:"white";
-                }
-
-                RadioButton{
-                    id: search_blue_tooth_button;
-                    anchors.verticalCenter:parent.verticalCenter;
-                    width: 120;
-                    height: 45;
-                    Material.background: Material.Green;
-                    onClicked: {
-                        console.log("开始搜索蓝牙设备");
-                        on_search_blue_tooth_button_clicked();
-                    }
-                }
-            }
-
-
+    RoundButton{
+        id : round_button;
+        width:200;
+        radius: 10;
+        anchors.horizontalCenter: parent.horizontalCenter;
+        text: "开启蓝牙配对";
+        height: 50;
+        font.pixelSize: 16;
+        onClicked: {
+            on_search_blue_tooth_button_clicked();
+            text = "正在搜索煎药机设备...";
+            enabled = false;
         }
     }
+
     BluetoothSearch{
         id: blue_tooth_search;
     }
+    function onSearchFinished(){
+        enabled = true;
+        text= "开启蓝牙配对";
+    }
+    function onChangeBtnText(text){
+        round_button.text = text;
+    }
 
     Component.onCompleted: {
-        on_search_blue_tooth_button_clicked.connect(blue_tooth_search.startDeviceDiscovered)
+        on_search_blue_tooth_button_clicked.connect(blue_tooth_search.startDeviceDiscovered);
+        blue_tooth_search.searchFinished.connect(onSearchFinished);
+        blue_tooth_search.changeBtnText.connect(onChangeBtnText);
     }
 }

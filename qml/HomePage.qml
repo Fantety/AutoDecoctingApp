@@ -3,39 +3,48 @@ import QtQuick.Controls 2.0
 import QtQuick.Controls.Material 2.3
 
 Rectangle{
+    signal startDecocting();
+    signal pauseDecocting();
+    signal quitDecocting();
     Column{
         id: home_page_colume;
         anchors.centerIn: parent;
         RoundButton{
             id: start_button;
-            width: 120;
-            height: 45;
+            width: 200;
+            height: 50;
+            radius: 10;
             text: "开始煎药";
+            font.pixelSize: 16;
             Material.background: Material.Green;
             onClicked: {
-                console.log("hello TaoQuick")
+                startDecocting();
             }
 
         }
         RoundButton{
             id: pause_button;
-            width: 120;
-            height: 45;
+            width: 200;
+            height: 50;
+            radius: 10;
             text: "暂停煎药";
+            font.pixelSize: 16;
             Material.background: Material.Blue;
             onClicked: {
-                console.log("hello TaoQuick")
+                pauseDecocting();
             }
 
         }
         RoundButton{
             id: quit_button;
-            width: 120;
-            height: 45;
+            width: 200;
+            height: 50;
+            radius: 10;
             text: "结束煎药";
+            font.pixelSize: 16;
             Material.background: Material.Red;
             onClicked: {
-                console.log("hello TaoQuick")
+                quitDecocting();
             }
 
         }

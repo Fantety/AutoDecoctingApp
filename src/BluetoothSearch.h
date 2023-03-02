@@ -2,23 +2,33 @@
 #define BLUETOOTHSEARCH_H
 
 #include <QObject>
-#include <QtBluetooth/QBluetoothDeviceDiscoveryAgent>
-#include <QtBluetooth/QBluetoothLocalDevice>
-#include <QtBluetooth/QBluetoothDeviceInfo>
+#include "bleinterface.h"
+
 class BluetoothSearch : public QObject
 {
     Q_OBJECT
+    BLEInterface *bleInterface;
+    void dataReceived(QByteArray data);
 
-    QBluetoothDeviceDiscoveryAgent* discoveryAgent;
-    QBluetoothLocalDevice* localDevice;
 public:
+
     explicit BluetoothSearch(QObject *parent = nullptr);
 
-signals:
 
+    void connectToESP();
+
+signals:
+    void searchFinished();
+    void changeBtnText(QString text);
+    void sendDeviceList(QString list);
+    void sendServiceList(QString list);
 public slots:
-    void onDeviceDiscovered(const QBluetoothDeviceInfo &info);
-    void startDeviceDiscovered();
+    void startScan();
+    void startDeviceConnect(int idx);
+    void onConnectToService(int idx);
+    void onStartDecocting();
+    void onPauseDecocting();
+    void onQuitDecocting();
 };
 
 #endif // BLUETOOTHSEARCH_H

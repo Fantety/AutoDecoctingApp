@@ -1,30 +1,81 @@
 ﻿#include "BluetoothSearch.h"
 
+void BluetoothSearch::dataReceived(QByteArray data)
+{
+
+}
+
 BluetoothSearch::BluetoothSearch(QObject *parent)
     : QObject{parent}
 {
-    discoveryAgent = new QBluetoothDeviceDiscoveryAgent();
-    localDevice = new QBluetoothLocalDevice();
-    connect(discoveryAgent, SIGNAL(deviceDiscovered(QBluetoothDeviceInfo)),this, SLOT(onDeviceDiscovered(QBluetoothDeviceInfo)));
-    connect(discoveryAgent,&QBluetoothDeviceDiscoveryAgent::errorOccurred,[=](QBluetoothDeviceDiscoveryAgent::Error error){
-            qDebug() << error;
+    bleInterface = new BLEInterface(this);
+    connect(bleInterface, SIGNAL(dataReceived(QByteArray)),this, SLOT(dataReceived(QByteArray)));
+    connect(bleInterface, &BLEInterface::devicesNamesChanged,
+                [this] (QStringList devices){
+            for(auto i :devices){
+                emit sendDeviceList(i);
+                qDebug()<<"device:"<<i;
+            }
         });
-    connect(discoveryAgent,&QBluetoothDeviceDiscoveryAgent::finished,[=](){
-            qDebug() << "搜索完成";
+    connect(bleInterface, &BLEInterface::servicesChanged,
+            [this] (QStringList services){
+            qDebug()<<services.size();
+            for(auto i :services){
+                emit sendServiceList(i);
+                qDebug()<<"service:"<<i;
+            }
         });
+    //bleInterface->scanDevices();
 }
 
-void BluetoothSearch::onDeviceDiscovered(const QBluetoothDeviceInfo &info)
+void BluetoothSearch::startScan()
 {
-    qDebug() << info.address().toString()<<":"<<info.name();
+     bleInterface->scanDevices();
 }
 
-void BluetoothSearch::startDeviceDiscovered()
+void BluetoothSearch::connectToESP()
 {
-    qDebug() << "开始搜索";
-    if( localDevice->hostMode() == QBluetoothLocalDevice::HostPoweredOff)
-    {
-        localDevice->powerOn();
-    }
-    discoveryAgent->start();
+    bleInterface->setCurrentService(0);
+    bleInterface->set_currentDevice(0);
+    bleInterface->connectCurrentDevice();
 }
+
+void BluetoothSearch::startDeviceConnect(int idx)
+{
+    bleInterface->set_currentDevice(idx);
+    qDebug()<<"currentIdx:"<<idx;
+    bleInterface->connectCurrentDevice();
+}
+
+void BluetoothSearch::onConnectToService(int idx)
+{
+    bleInterface->setCurrentService(idx);
+}
+
+
+void BluetoothSearch::onStartDecocting()
+{
+    qDebug()<<"开始煎药";
+    QByteArray data;
+    data =  QByteArray(QString("start").toLatin1());
+    bleInterface->write(data);
+}
+
+void BluetoothSearch::onPauseDecocting()
+{
+    qDebug()<<"开始煎药";
+    QByteArray data;
+    data =  QByteArray(QString("pause").toLatin1());
+    bleInterface->write(data);
+
+}
+
+void BluetoothSearch::onQuitDecocting()
+{
+    qDebug()<<"开始煎药";
+    QByteArray data;
+    data =  QByteArray(QString("quit").toLatin1());
+    bleInterface->write(data);
+
+}
+

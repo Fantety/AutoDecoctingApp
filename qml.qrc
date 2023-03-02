@@ -2,6 +2,6 @@
     <qresource prefix="/">
         <file>main.qml</file>
         <file>qml/HomePage.qml</file>
-        <file>qml/BluetoothPage.qml</file>
+        <file>qml/MachineInfo.qml</file>
     </qresource>
 </RCC>
