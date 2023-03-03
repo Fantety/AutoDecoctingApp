@@ -22,6 +22,7 @@ signals:
     void changeBtnText(QString text);
     void sendDeviceList(QString list);
     void sendServiceList(QString list);
+    void sendInfoTerminal(QString msg);
 public slots:
     void startScan();
     void startDeviceConnect(int idx);

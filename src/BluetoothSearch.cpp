@@ -15,6 +15,8 @@ BluetoothSearch::BluetoothSearch(QObject *parent)
             for(auto i :devices){
                 emit sendDeviceList(i);
                 qDebug()<<"device:"<<i;
+                emit sendInfoTerminal("搜索到设备: "+i);
+                emit searchFinished();
             }
         });
     connect(bleInterface, &BLEInterface::servicesChanged,
@@ -23,6 +25,7 @@ BluetoothSearch::BluetoothSearch(QObject *parent)
             for(auto i :services){
                 emit sendServiceList(i);
                 qDebug()<<"service:"<<i;
+                emit sendInfoTerminal("服务: "+i);
             }
         });
     //bleInterface->scanDevices();
@@ -31,6 +34,7 @@ BluetoothSearch::BluetoothSearch(QObject *parent)
 void BluetoothSearch::startScan()
 {
      bleInterface->scanDevices();
+     emit sendInfoTerminal("正在搜索设备...");
 }
 
 void BluetoothSearch::connectToESP()
@@ -44,12 +48,14 @@ void BluetoothSearch::startDeviceConnect(int idx)
 {
     bleInterface->set_currentDevice(idx);
     qDebug()<<"currentIdx:"<<idx;
+    emit sendInfoTerminal("连接至设备: "+QString::number(idx));
     bleInterface->connectCurrentDevice();
 }
 
 void BluetoothSearch::onConnectToService(int idx)
 {
     bleInterface->setCurrentService(idx);
+    emit sendInfoTerminal("连接至服务: "+QString::number(idx));
 }
 
 

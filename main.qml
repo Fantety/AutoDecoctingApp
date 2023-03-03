@@ -49,7 +49,9 @@ Window {
             signal connect_to_service(int idx);
             signal start_search();
             Row{
+                id: up_row;
                 spacing:10;
+                anchors.top:bluetooth_page.bottom;
                 anchors.horizontalCenter: parent.horizontalCenter;
                 RoundButton{
                     id : search_button;
@@ -72,7 +74,6 @@ Window {
                     font.pixelSize: 16;
                     onClicked: {
                         bluetooth_page.on_search_blue_tooth_button_clicked(combod.currentIndex);
-                        text = "正在连接设备...";
                     }
                 }
                 RoundButton{
@@ -87,15 +88,35 @@ Window {
                     }
                 }
             }
-
+            Rectangle{
+                id: info_rect;
+                color:"black";
+                height: 30;
+                anchors.left: parent.left;
+                anchors.right: parent.right;
+                anchors.top:bluetooth_page.bottom;
+                anchors.horizontalCenter: parent.horizontalCenter;
+                anchors.topMargin: 60;
+                Text{
+                    id: info_terminal;
+                    anchors.horizontalCenter: parent.horizontalCenter;
+                    anchors.verticalCenter: parent.verticalCenter;
+                    text: "msg";
+                    font.pixelSize: 16;
+                    color: "white";
+                }
+                function set_info_terminal_msg(msg){
+                    info_terminal.text = msg;
+                }
+            }
 
 
             BluetoothSearch{
                 id: blue_tooth_search;
             }
             function onSearchFinished(){
-                enabled = true;
-                text= "开启蓝牙配对";
+                search_button.text = "搜索设备";
+                combod.currentIndex = 0;
             }
             function onChangeBtnText(text){
                 round_button.text = text;
@@ -107,13 +128,14 @@ Window {
                 bluetooth_page.start_search.connect(blue_tooth_search.startScan);
                 blue_tooth_search.searchFinished.connect(onSearchFinished);
                 blue_tooth_search.changeBtnText.connect(onChangeBtnText);
+                blue_tooth_search.sendInfoTerminal.connect(info_rect.set_info_terminal_msg)
 
             }
         }
         Row{
             id:combo_row;
-            anchors.top:bluetooth_page.bottom;
-            anchors.topMargin: 50;
+            anchors.top: bluetooth_page.bottom;
+            anchors.topMargin: 100;
             anchors.horizontalCenter: parent.horizontalCenter;
             spacing: 10;
             ComboBox{
