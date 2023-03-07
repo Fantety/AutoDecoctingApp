@@ -8,7 +8,7 @@ class BluetoothSearch : public QObject
 {
     Q_OBJECT
     BLEInterface *bleInterface;
-    void dataReceived(QByteArray data);
+
 
 public:
 
@@ -23,6 +23,7 @@ signals:
     void sendDeviceList(QString list);
     void sendServiceList(QString list);
     void sendInfoTerminal(QString msg);
+    void sendTemp(QString temp);
 public slots:
     void startScan();
     void startDeviceConnect(int idx);
@@ -30,6 +31,7 @@ public slots:
     void onStartDecocting();
     void onPauseDecocting();
     void onQuitDecocting();
+    void dataReceived(QByteArray data);
 };
 
 #endif // BLUETOOTHSEARCH_H

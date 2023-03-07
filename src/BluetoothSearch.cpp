@@ -1,9 +1,6 @@
 ﻿#include "BluetoothSearch.h"
 
-void BluetoothSearch::dataReceived(QByteArray data)
-{
 
-}
 
 BluetoothSearch::BluetoothSearch(QObject *parent)
     : QObject{parent}
@@ -29,6 +26,12 @@ BluetoothSearch::BluetoothSearch(QObject *parent)
             }
         });
     //bleInterface->scanDevices();
+}
+
+void BluetoothSearch::dataReceived(QByteArray data)
+{
+    emit sendTemp(data);
+    qDebug()<<"xxxxxx";
 }
 
 void BluetoothSearch::startScan()

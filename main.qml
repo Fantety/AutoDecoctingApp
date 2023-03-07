@@ -129,6 +129,7 @@ Window {
                 blue_tooth_search.searchFinished.connect(onSearchFinished);
                 blue_tooth_search.changeBtnText.connect(onChangeBtnText);
                 blue_tooth_search.sendInfoTerminal.connect(info_rect.set_info_terminal_msg)
+                blue_tooth_search.sendTemp.connect(machine_info.set_temp)
 
             }
         }

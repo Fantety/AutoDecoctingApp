@@ -12,6 +12,10 @@ Rectangle{
     anchors.topMargin: 10;
     anchors.bottomMargin: 20;
     color : "#21373d";
+    function set_temp(temp){
+        temp_num.text = temp;
+    }
+
     Column{
         spacing: 10;
         anchors.fill: parent;
@@ -52,6 +56,7 @@ Rectangle{
                     color: "#132c33";
 
                     Text {
+                        id: temp_num;
                         anchors.centerIn: parent;
                         text: qsTr("37");
                         font.pixelSize: 24;
