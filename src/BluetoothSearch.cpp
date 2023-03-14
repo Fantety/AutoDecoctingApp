@@ -31,7 +31,6 @@ BluetoothSearch::BluetoothSearch(QObject *parent)
 void BluetoothSearch::dataReceived(QByteArray data)
 {
     emit sendTemp(data);
-    qDebug()<<"xxxxxx";
 }
 
 void BluetoothSearch::startScan()
