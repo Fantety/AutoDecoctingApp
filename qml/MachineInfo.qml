@@ -16,6 +16,10 @@ Rectangle{
         temp_num.text = temp;
     }
 
+    function set_time(time){
+        used_time_time.text = time;
+    }
+
     Column{
         spacing: 10;
         anchors.fill: parent;
@@ -144,6 +148,7 @@ Rectangle{
                     anchors.verticalCenter: parent.verticalCenter;
                     color:"#131124";
                     Text {
+                        id: used_time_time;
                         anchors.centerIn: parent;
                         text: qsTr("37");
                         font.pixelSize: 24;

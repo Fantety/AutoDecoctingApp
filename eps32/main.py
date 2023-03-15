@@ -8,6 +8,8 @@ from machine import I2C,Pin,PWM,Timer,SoftI2C
 from ssd1306 import SSD1306_I2C #oled屏
 import onewire,ds18x20 #温度传感器相关模块
 
+
+temp = 0
 info = 'none'
 #构建I2C对象
 i2c1=SoftI2C(sda=Pin(16), scl=Pin(17))
@@ -54,102 +56,92 @@ time_count_20 = 0
 time_count_5 = 0
 start_5 = 0
 timer_main = Timer(0)
-def start_decocting():
+tim = Timer(-1)
+def start_decocting(timer_main):
+    global order
+    global time_count_20
+    global time_count_5
+    global time_count
+    global start_5
+    global start_20
+    global temp
     if start_20 == 1:
-        global time_count_20
         time_count_20 += 1
     if start_5 == 1:
-        global time_count_5
         time_count_5 += 1
     if p.is_connected():
-        p.send('timer')
-    if timer_count == 0:
-        global order
+        p.send('c'+str('%.2f'%temp)+';'+'t'+str(time_count))
+    if time_count == 0:
         order = 1
+        p.send('l1')
         #此处开始煎药的操作
         #先煎药放下
         #开始浸泡
         pass
-    elif order == 1 and timer_count == 40*60:
-        global order
+    elif order == 1 and time_count == 40*60:
         order = 2
+        p.send('l2')
         #继电器通电
         #开始先煎
         #加热至100
         pass
     elif order == 2 and is_boil == 1:
-        global order
-        global time_count_20
-        global start_20
         order = 3
         time_count_20 = 0
         start_20 = 1
+        p.send('l3')
         #继电器通电
         #70-80恒温20分钟
         pass
     elif order == 3 and time_count_20 == 20*60:
-        global order
-        global start_20                        
-        global time_count_20
         order = 4
         start_20 = 0
         time_count_20 = 0
+        p.send('l4')
         #中煎药放下
         #加热至100
         pass
     elif order == 4 and is_boil == 1:
-        global order
-        global time_count_20
-        global start_20
         order = 5
         time_count_20 = 0
         start_20 = 1
+        p.send('l5')
         #继电器通电
         #70-80恒温20分钟
         pass
     elif order == 5 and time_count_20 == 20*60:
-        global order
-        global start_20                        
-        global time_count_20
         order = 6
         start_20 = 0
         time_count_20 = 0
+        p.send('l6')
         #加热至100
         #浓缩
         pass
     elif order == 6:
-        global order
         order = 7
+        p.send('l7')
         #下入后煎
         pass
     elif order == 7:
-        global order
-        global time_count_5
-        global start_5
         order = 8
         time_count_5 = 0
         start_5 = 1
+        p.send('l8')
         #继电器通电
         #加热5-10分钟
         pass
-    elif order == 8:
-        global order
-        global time_count_20
-        global start_20
-        global time_count_5
-        global start_5
+    elif order == 8:   
         order = 0
         time_count_5 = 0
         start_5 = 0
         time_count_20 = 0
         start_20 = 0
-        global timer_main
         timer_main.deinit()
+        p.send('l9')
         #继电器通电
         #加热5-10分钟
         pass
-    global time_count
-    timer_count += 1
+    time_count += 1
 
 
 #温度传感器相关模块初始化
@@ -170,9 +162,9 @@ def on_rx(v):
         global info
         if info != 'start':
             global timer_main
-            timer_main.init(period=1000, mode=Timer.ONE_SHOT,callback=start_decocting)
-            s.Step(0,100)
-            s.Step(1,100)
+            global tim
+            timer_main.init(period=1000, mode=Timer.PERIODIC,callback=start_decocting)
+            tim.init(period=2000, mode=Timer.PERIODIC,callback=temp_get)
             info = 'start'
             oled.text("start",0,30)
     elif v==b'pause':
@@ -182,6 +174,8 @@ def on_rx(v):
     elif v==b'quit':
         global info
         if info == 'start':
+            global timer_main
+            timer_main.deinit()
             s.Step(0,100,0)
             s.Step(1,100,0)
             info = 'quit'
@@ -193,6 +187,7 @@ p.on_write(on_rx)
 
 def temp_get(tim):
     ds.convert_temp()
+    global temp
     temp = ds.read_temp(rom[0]) #温度显示,rom[0]为第 1 个 DS18B20
     #OLED 数据显示
     oled.fill(0)#清屏背景黑色
@@ -204,13 +199,11 @@ def temp_get(tim):
     else:
         global is_boil
         is_boil = 0
-    if p.is_connected():
-        p.send(str('%.2f'%temp))
     oled.show()
 #开启 RTOS 定时器，编号为-1
-tim = Timer(-1)
+
 #定时器周期为 1000ms
-tim.init(period=1000, mode=Timer.PERIODIC,callback=temp_get)
+
 
 
 

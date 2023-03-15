@@ -6,6 +6,7 @@ Rectangle{
     signal startDecocting();
     signal pauseDecocting();
     signal quitDecocting();
+    signal settingDecocting();
     Column{
         id: home_page_colume;
         anchors.centerIn: parent;
@@ -45,6 +46,19 @@ Rectangle{
             Material.background: Material.Red;
             onClicked: {
                 quitDecocting();
+            }
+
+        }
+        RoundButton{
+            id: setting_button;
+            width: 200;
+            height: 50;
+            radius: 10;
+            text: "参数设置";
+            font.pixelSize: 16;
+            Material.background: Material.Purple;
+            onClicked: {
+                settingDecocting();
             }
 
         }

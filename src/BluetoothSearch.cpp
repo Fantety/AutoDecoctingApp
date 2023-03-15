@@ -30,7 +30,25 @@ BluetoothSearch::BluetoothSearch(QObject *parent)
 
 void BluetoothSearch::dataReceived(QByteArray data)
 {
-    emit sendTemp(data);
+    QString s_data = QString(data);
+    QStringList list;
+    if(s_data.contains(";")){
+        list = s_data.split(";");
+        if(list[0].front() == 'c'){
+            emit sendTemp(list[0].mid(1));
+        }
+        //时间刻
+        if(list[1].front() == 't'){
+            emit sendTime(secondToTime(list[1].mid(1).toInt()));
+        }
+    }
+}
+
+void BluetoothSearch::onSaveParam(int soak_time, int first_temp, int middle_temp)
+{
+    QByteArray data;
+    data =  QByteArray(QString("p"+QString::number(soak_time)+","+QString::number(first_temp)+","+QString::number(middle_temp)).toLatin1());
+    bleInterface->write(data);
 }
 
 void BluetoothSearch::startScan()

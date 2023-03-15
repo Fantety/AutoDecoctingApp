@@ -44,7 +44,7 @@ Window {
             anchors.right: parent.right;
             anchors.top:machine_info.bottom;
             anchors.horizontalCenter: parent.horizontalCenter;
-            anchors.topMargin: -10;
+            anchors.topMargin: -20;
             signal on_search_blue_tooth_button_clicked(int idx);
             signal connect_to_service(int idx);
             signal start_search();
@@ -130,6 +130,7 @@ Window {
                 blue_tooth_search.changeBtnText.connect(onChangeBtnText);
                 blue_tooth_search.sendInfoTerminal.connect(info_rect.set_info_terminal_msg)
                 blue_tooth_search.sendTemp.connect(machine_info.set_temp)
+                blue_tooth_search.sendTime.connect(machine_info.set_time)
 
             }
         }
@@ -168,12 +169,124 @@ Window {
             anchors.left: parent.left;
             anchors.right: parent.right;
             anchors.top:combo_row.bottom;
-            anchors.topMargin: 80;
+            anchors.topMargin: 100;
             anchors.horizontalCenter: parent.horizontalCenter;
             Component.onCompleted: {
                 startDecocting.connect(blue_tooth_search.onStartDecocting);
                 pauseDecocting.connect(blue_tooth_search.onPauseDecocting);
                 quitDecocting.connect(blue_tooth_search.onQuitDecocting);
+                settingDecocting.connect(setting_page.show_setting);
+            }
+        }
+
+        Page{
+            signal save_param(int soak_time, int first_temp, int middle_temp)
+            id: setting_page;
+            visible: false;
+            anchors.fill: parent;
+            function show_setting(){
+                setting_page.visible = true;
+            }
+            Component.onCompleted: {
+                save_param.connect(blue_tooth_search.onSaveParam);
+            }
+            Column{
+                anchors.fill: parent;
+                Row{
+                    anchors.horizontalCenter: parent.horizontalCenter;
+                    Text{
+                        anchors.verticalCenter: parent.verticalCenter;
+                        text:"浸泡时间(分钟)";
+                        font.pixelSize: 16;
+                        color:"white";
+                    }
+                    Slider{
+                        id: soak_time;
+                        stepSize: 1;
+                        from: 30
+                        value: 40
+                        to: 60
+                        width: 100;
+                        onMoved: {
+                            soak_time_value.text = soak_time.value.toString();
+                        }
+                    }
+                    Text{
+                        id: soak_time_value;
+                        anchors.verticalCenter: parent.verticalCenter;
+                        text:"40";
+                        font.pixelSize: 16;
+                        color:"white";
+                    }
+                }
+                Row{
+                    anchors.horizontalCenter: parent.horizontalCenter;
+                    Text{
+                        anchors.verticalCenter: parent.verticalCenter;
+                        text:"先煎恒温(摄氏)";
+                        color:"white";
+                        font.pixelSize: 16;
+                    }
+                    Slider{
+                        id: first_temp;
+                        stepSize: 1;
+                        from: 70
+                        value: 75
+                        to: 80
+                        width: 100;
+                        onMoved: {
+                            first_temp_value.text = first_temp.value.toString();
+                        }
+                    }
+                    Text{
+                        id: first_temp_value;
+                        color:"white";
+                        anchors.verticalCenter: parent.verticalCenter;
+                        text:"75";
+                        font.pixelSize: 16;
+                    }
+                }
+                Row{
+                    anchors.horizontalCenter: parent.horizontalCenter;
+                    Text{
+                        anchors.verticalCenter: parent.verticalCenter;
+                        text:"中煎恒温(摄氏)";
+                        font.pixelSize: 16;
+                        color:"white";
+                    }
+                    Slider{
+                        id: middle_temp;
+                        stepSize: 1;
+                        from: 70
+                        value: 75
+                        to: 80
+                        width: 100;
+                        onMoved: {
+                            middle_temp_value.text = middle_temp.value.toString();
+                        }
+                    }
+                    Text{
+                        id: middle_temp_value;
+                        anchors.verticalCenter: parent.verticalCenter;
+                        text:"75";
+                        color:"white";
+                        font.pixelSize: 16;
+                    }
+                }
+                RoundButton{
+                    anchors.horizontalCenter: parent.horizontalCenter;
+                    id: save_button;
+                    width: 200;
+                    height: 50;
+                    radius: 10;
+                    text: "保存参数";
+                    font.pixelSize: 16;
+                    Material.background: Material.Purple;
+                    onClicked: {
+                        setting_page.save_param(soak_time.value, first_temp.value, middle_temp.value)
+                        setting_page.visible = false;
+                    }
+                }
             }
         }
     }

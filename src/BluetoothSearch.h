@@ -8,11 +8,26 @@ class BluetoothSearch : public QObject
 {
     Q_OBJECT
     BLEInterface *bleInterface;
+    int qTime = 0;
 
 
 public:
 
     explicit BluetoothSearch(QObject *parent = nullptr);
+
+    QString secondToTime(int second){
+        int H = second / (60*60);
+        int M = (second- (H * 60 * 60)) / 60;
+        int S = (second - (H * 60 * 60)) - M * 60;
+        QString hour = QString::number(H);
+        if (hour.length() == 1) hour = "0" + hour;
+        QString min = QString::number(M);
+        if (min.length() == 1) min = "0" + min;
+        QString sec = QString::number(S);
+        if (sec.length() == 1) sec = "0" + sec;
+        QString qTime = hour + ":" + min + ":" + sec;
+        return qTime;
+    };
 
 
     void connectToESP();
@@ -24,6 +39,7 @@ signals:
     void sendServiceList(QString list);
     void sendInfoTerminal(QString msg);
     void sendTemp(QString temp);
+    void sendTime(QString time);
 public slots:
     void startScan();
     void startDeviceConnect(int idx);
@@ -32,6 +48,7 @@ public slots:
     void onPauseDecocting();
     void onQuitDecocting();
     void dataReceived(QByteArray data);
+    void onSaveParam(int soak_time, int first_temp, int middle_temp);
 };
 
 #endif // BLUETOOTHSEARCH_H
