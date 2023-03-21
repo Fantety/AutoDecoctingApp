@@ -40,6 +40,8 @@ signals:
     void sendInfoTerminal(QString msg);
     void sendTemp(QString temp);
     void sendTime(QString time);
+    void sendClearDeviceItem();
+    void change_round_button_text(QString text);
 public slots:
     void startScan();
     void startDeviceConnect(int idx);
@@ -49,6 +51,7 @@ public slots:
     void onQuitDecocting();
     void dataReceived(QByteArray data);
     void onSaveParam(int soak_time, int first_temp, int middle_temp);
+    void onDeviceDisconnected(QString info, bool isGood);
 };
 
 #endif // BLUETOOTHSEARCH_H

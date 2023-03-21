@@ -61,7 +61,8 @@ Window {
                     height: 50;
                     font.pixelSize: 16;
                     onClicked: {
-                        bluetooth_page.start_search()
+                        bluetooth_page.start_search();
+                        enabled = false;
                         text = "正在搜索";
                     }
                 }
@@ -72,8 +73,19 @@ Window {
                     text: "连接设备";
                     height: 50;
                     font.pixelSize: 16;
+                    property bool status: false
                     onClicked: {
-                        bluetooth_page.on_search_blue_tooth_button_clicked(combod.currentIndex);
+                        if (status == false){
+                            bluetooth_page.on_search_blue_tooth_button_clicked(combod.currentIndex);
+                        }
+                        else{
+                            bluetooth_page.on_search_blue_tooth_button_clicked(-1);
+                            search_button.enabled = true;
+                        }
+                        status = !status;
+                    }
+                    function change_round_button_text(text){
+                        round_button.text = text;
                     }
                 }
                 RoundButton{
@@ -131,6 +143,7 @@ Window {
                 blue_tooth_search.sendInfoTerminal.connect(info_rect.set_info_terminal_msg)
                 blue_tooth_search.sendTemp.connect(machine_info.set_temp)
                 blue_tooth_search.sendTime.connect(machine_info.set_time)
+                blue_tooth_search.change_round_button_text.connect(round_button.change_round_button_text)
 
             }
         }
@@ -158,9 +171,16 @@ Window {
                     models.append({text: str});
                 }
             }
+            function clearDeviceData(){
+                modeld.clear();
+                models.clear();
+                round_button.text = "连接设备"
+            }
+
             Component.onCompleted: {
                 blue_tooth_search.sendDeviceList.connect(combod.addDeviceItem);
                 blue_tooth_search.sendServiceList.connect(combos.addServiceItem);
+                blue_tooth_search.sendClearDeviceItem.connect(combo_row.clearDeviceData);
             }
         }
 

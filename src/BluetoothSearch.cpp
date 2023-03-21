@@ -7,6 +7,7 @@ BluetoothSearch::BluetoothSearch(QObject *parent)
 {
     bleInterface = new BLEInterface(this);
     connect(bleInterface, SIGNAL(dataReceived(QByteArray)),this, SLOT(dataReceived(QByteArray)));
+    connect(bleInterface, SIGNAL(statusInfoChanged(QString, bool)), this, SLOT(onDeviceDisconnected(QString, bool)));
     connect(bleInterface, &BLEInterface::devicesNamesChanged,
                 [this] (QStringList devices){
             for(auto i :devices){
@@ -51,6 +52,15 @@ void BluetoothSearch::onSaveParam(int soak_time, int first_temp, int middle_temp
     bleInterface->write(data);
 }
 
+void BluetoothSearch::onDeviceDisconnected(QString info, bool isGood)
+{
+    if(info == "Service disconnected"){
+        emit sendClearDeviceItem();
+        emit sendInfoTerminal("连接已断开");
+    }
+
+}
+
 void BluetoothSearch::startScan()
 {
      bleInterface->scanDevices();
@@ -66,10 +76,17 @@ void BluetoothSearch::connectToESP()
 
 void BluetoothSearch::startDeviceConnect(int idx)
 {
-    bleInterface->set_currentDevice(idx);
-    qDebug()<<"currentIdx:"<<idx;
-    emit sendInfoTerminal("连接至设备: "+QString::number(idx));
-    bleInterface->connectCurrentDevice();
+    if(idx != -1){
+        bleInterface->set_currentDevice(idx);
+        qDebug()<<"currentIdx:"<<idx;
+        emit sendInfoTerminal("连接至设备: "+QString::number(idx));
+        emit change_round_button_text("断开连接");
+        bleInterface->connectCurrentDevice();
+    }
+    else if(idx == -1){
+        bleInterface->disconnectDevice();
+        emit change_round_button_text("连接设备");
+    }
 }
 
 void BluetoothSearch::onConnectToService(int idx)
