@@ -80,12 +80,12 @@ void BluetoothSearch::startDeviceConnect(int idx)
         bleInterface->set_currentDevice(idx);
         qDebug()<<"currentIdx:"<<idx;
         emit sendInfoTerminal("连接至设备: "+QString::number(idx));
-        emit change_round_button_text("断开连接");
+        emit changeRoundButtonText("断开连接");
         bleInterface->connectCurrentDevice();
     }
     else if(idx == -1){
         bleInterface->disconnectDevice();
-        emit change_round_button_text("连接设备");
+        emit changeRoundButtonText("连接设备");
     }
 }
 

@@ -41,7 +41,7 @@ signals:
     void sendTemp(QString temp);
     void sendTime(QString time);
     void sendClearDeviceItem();
-    void change_round_button_text(QString text);
+    void changeRoundButtonText(QString text);
 public slots:
     void startScan();
     void startDeviceConnect(int idx);

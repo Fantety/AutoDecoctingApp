@@ -45,7 +45,7 @@ Window {
             anchors.top:machine_info.bottom;
             anchors.horizontalCenter: parent.horizontalCenter;
             anchors.topMargin: -20;
-            signal on_search_blue_tooth_button_clicked(int idx);
+            signal on_connect_blue_tooth_button_clicked(int idx);
             signal connect_to_service(int idx);
             signal start_search();
             Row{
@@ -76,10 +76,10 @@ Window {
                     property bool status: false
                     onClicked: {
                         if (status == false){
-                            bluetooth_page.on_search_blue_tooth_button_clicked(combod.currentIndex);
+                            bluetooth_page.on_connect_blue_tooth_button_clicked(combod.currentIndex);
                         }
                         else{
-                            bluetooth_page.on_search_blue_tooth_button_clicked(-1);
+                            bluetooth_page.on_connect_blue_tooth_button_clicked(-1);
                             search_button.enabled = true;
                         }
                         status = !status;
@@ -135,7 +135,7 @@ Window {
             }
 
             Component.onCompleted: {
-                bluetooth_page.on_search_blue_tooth_button_clicked.connect(blue_tooth_search.startDeviceConnect);
+                bluetooth_page.on_connect_blue_tooth_button_clicked.connect(blue_tooth_search.startDeviceConnect);
                 bluetooth_page.connect_to_service.connect(blue_tooth_search.onConnectToService);
                 bluetooth_page.start_search.connect(blue_tooth_search.startScan);
                 blue_tooth_search.searchFinished.connect(onSearchFinished);
@@ -143,7 +143,7 @@ Window {
                 blue_tooth_search.sendInfoTerminal.connect(info_rect.set_info_terminal_msg)
                 blue_tooth_search.sendTemp.connect(machine_info.set_temp)
                 blue_tooth_search.sendTime.connect(machine_info.set_time)
-                blue_tooth_search.change_round_button_text.connect(round_button.change_round_button_text)
+                blue_tooth_search.changeRoundButtonText.connect(round_button.change_round_button_text)
 
             }
         }
