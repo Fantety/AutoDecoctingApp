@@ -38,9 +38,11 @@ void BluetoothSearch::dataReceived(QByteArray data)
         if(list[0].front() == 'c'){
             emit sendTemp(list[0].mid(1));
         }
-        //时间刻
         if(list[1].front() == 't'){
             emit sendTime(secondToTime(list[1].mid(1).toInt()));
+        }
+        if(list[2].front() == 'l' and list[3].front() == 's'){
+            emit sendInfoTerminal("阶段: "+list[2].mid(1)+"/状态: "+list[3].mid(1));
         }
     }
 }

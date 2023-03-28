@@ -6,6 +6,7 @@ import bluetooth
 from machine import I2C,Pin,PWM,Timer,SoftI2C
 from ssd1306 import SSD1306_I2C
 import onewire,ds18x20 #温度传感器相关模块
+from mthread import Task
 
 #遥控器处理
 IR = Pin(21, Pin.IN, Pin.PULL_UP)
@@ -49,6 +50,8 @@ def getkey():
 
 temp = 0
 info = 'none'
+
+stepper_count = 0
 #构建I2C对象
 i2c1=SoftI2C(sda=Pin(16), scl=Pin(17))
 #i2c1_2=SoftI2C(sda=Pin(21), scl=Pin(22))
@@ -75,7 +78,6 @@ oled = SSD1306_I2C(128,64, i2c, addr=0x3c)
 Beep = PWM(Pin(25), freq=0, duty=512)
 
 
-LED=Pin(2,Pin.OUT) #构建LED对象,开始熄灭
 KEY=Pin(0,Pin.IN,Pin.PULL_UP) #构建KEY对象
 state=0  #LED引脚状态
 
@@ -87,111 +89,93 @@ aa=carble.config('mac')
 #构建继电器对象,默认断开
 relay=Pin(32,Pin.OUT,value=1)
 
-ble_send_timer = Timer(1)
 
 #流程计时相关
-start_20 = 0
+#下入先煎1
+#浸泡2
+SOAK_TIME = 10
+#烧开3
+#恒温4
+CONSTANT_TEMP = 10
+#加入中煎5
+#烧开6
+#恒温7
+#浓缩8
+#下入后煎9
+#沸煮10
+#结束11
+is_active = False
 order = 0
 is_boil = 0
 time_count = 0
-time_count_20 = 0
-time_count_5 = 0
-start_5 = 0
-timer_main = Timer(0)
-tim = Timer(-1)
-def start_decocting(timer_main):
-    global order
-    global time_count_20
-    global time_count_5
+time_contin_count = 0
+timer_oneshot_task = Timer(2)
+timer_contin_task = Timer(3)
+
+def start_decocting():
     global time_count
-    global start_5
-    global start_20
-    global temp
-    if start_20 == 1:
-        time_count_20 += 1
-    if start_5 == 1:
-        time_count_5 += 1
-    if time_count == 0:
-        order = 1
-        if p.is_connected():
-            p.send('l1')
-        s.Step(0,12.5,0,4,50)
-        #此处开始煎药的操作
-        #先煎药放下
-        #开始浸泡
+    global is_active
+    while 1:
+        time_count += 1
+        if is_active:
+            if order == 1 or order == 5 or order == 9:
+                timer_oneshot_task.init(period=1000, mode=Timer.ONE_SHOT,callback=oneshot_task)
+                pass
+            elif order == 2 or order == 3 or order == 4:
+                timer_contin_task.init(period=1000, mode=Timer.PERIODIC,callback=contin_task)
+                pass
+            pass
+        utime.sleep_ms(1000)
+decocting_task = Task(start_decocting)
+
+def oneshot_task(timer_oneshot_task):
+    global is_active
+    global order
+    global time_contin_count
+    time_contin_count = 0
+    is_active = False
+    rotate_stepper()
+    order += 1
+    is_active = True
+    timer_oneshot_task.deinit()
+    pass
+
+def contin_task(timer_contin_task):
+    global is_active
+    global time_contin_count
+    global order
+    is_active = False
+    time_contin_count += 1
+    if order == 2:
+        if time_contin_count >= SOAK_TIME:
+            time_contin_count = 0
+            is_active = True
+            order += 1
+            timer_contin_task.deinit()
+            pass 
         pass
-    elif order == 1 and time_count == 40*60:
-        order = 2
-        if p.is_connected():
-            p.send('l2')
-        #继电器通电
-        #开始先煎
-        #加热至100
+    elif order == 3:
+        relay.value(0)
+        if is_boil == 1:
+            time_contin_count = 0
+            is_active = True
+            order += 1
+            timer_contin_task.deinit()
+            pass
+    elif order == 4:
+        if time_contin_count >= CONSTANT_TEMP:
+            time_contin_count = 0
+            is_active = True
+            order += 1
+            timer_contin_task.deinit()
+            pass 
         pass
-    elif order == 2 and is_boil == 1:
-        order = 3
-        time_count_20 = 0
-        start_20 = 1
-        if p.is_connected():
-            p.send('l3')
-        #继电器通电
-        #70-80恒温20分钟
-        pass
-    elif order == 3 and time_count_20 == 20*60:
-        order = 4
-        start_20 = 0
-        time_count_20 = 0
-        if p.is_connected():
-            p.send('l4')
-        #中煎药放下
-        #加热至100
-        pass
-    elif order == 4 and is_boil == 1:
-        order = 5
-        time_count_20 = 0
-        start_20 = 1
-        if p.is_connected():
-            p.send('l5')
-        #继电器通电
-        #70-80恒温20分钟
-        pass
-    elif order == 5 and time_count_20 == 20*60:
-        order = 6
-        start_20 = 0
-        time_count_20 = 0
-        if p.is_connected():
-            p.send('l6')
-        #加热至100
-        #浓缩
-        pass
-    elif order == 6:
-        order = 7
-        if p.is_connected():
-            p.send('l7')
-        #下入后煎
-        pass
-    elif order == 7:
-        order = 8
-        time_count_5 = 0
-        start_5 = 1
-        if p.is_connected():
-            p.send('l8')
-        #继电器通电
-        #加热5-10分钟
-        pass
-    elif order == 8:
-        order = 0
-        time_count_5 = 0
-        start_5 = 0
-        time_count_20 = 0
-        start_20 = 0
-        timer_main.deinit()
-        if p.is_connected():
-            p.send('l9')
-        #继电器通电
-        #加热5-10分钟
-        pass
-    time_count += 1
+    pass
+
+def rotate_stepper():
+    global stepper_count
+    s.Step(0,12.5,0,4,50)
+    stepper_count += 12.5
 
 
 #温度传感器相关模块初始化
@@ -202,9 +186,11 @@ rom = ds.scan() #扫描单总线上的传感器地址，支持多个传感器同
 
 #蓝牙接受数据处理
 def on_rx(v):
+    global order
+    global is_active
     Beep.freq(500)
-    time.sleep_ms(500)
-    Beep.deinit()
+    time.sleep_ms(200)
+    Beep.freq(0)
     oled.fill(0)
     #print(v[0])
     #print("Receive_data:", str(v))
@@ -213,8 +199,10 @@ def on_rx(v):
         if info != 'start':
             global timer_main
             global tim
-            timer_main.init(period=1000, mode=Timer.PERIODIC,callback=start_decocting)
-            tim.init(period=2000, mode=Timer.PERIODIC,callback=temp_get)
+            decocting_task.start()
+            temp_task.start()
+            order = 1
+            is_active = True
             info = 'start'
             oled.text("start",0,30)
     elif v==b'pause':
@@ -224,10 +212,21 @@ def on_rx(v):
     elif v==b'quit':
         global info
         if info == 'start':
-            global timer_main
-            timer_main.deinit()
-            tim.deinit()
-            s.Step(0,100,0)
+            order = 0
+            global time_count
+            global stepper_count
+            global time_contin_count
+            global order
+            decocting_task.stop()
+            temp_task.stop()
+            order = 0
+            relay.value(1)
+            time_count = 0
+            time_contin_count = 0
+            timer_contin_task.deinit()
+            timer_oneshot_task.deinit()
+            s.Step(0,stepper_count,1,4,50)
+            stepper_count = 0
             info = 'quit'
             oled.text("quit",0,30)
 p.on_write(on_rx)
@@ -235,56 +234,57 @@ p.on_write(on_rx)
 
 #温度传感器数据处理
 
-def temp_get(tim):
-    ds.convert_temp()
-    global temp
-    temp = ds.read_temp(rom[0]) #温度显示,rom[0]为第 1 个 DS18B20
-    #OLED 数据显示
-    oled.fill(0)#清屏背景黑色
-    oled.text('AutoDecocting', 0, 0)
-    oled.text('Temp: '+str('%.2f'%temp)+' C',0,15)
-    if temp > 98.0:
-        global is_boil
-        is_boil = 1
-    else:
-        global is_boil
-        is_boil = 0
-    oled.show()
-#开启 RTOS 定时器，编号为-1
-
-#定时器周期为 1000ms
-
+def temp_get():
+    while 1:
+        ds.convert_temp()
+        global temp
+        temp = ds.read_temp(rom[0]) #温度显示,rom[0]为第 1 个 DS18B20
+        #OLED 数据显示
+        oled.fill(0)#清屏背景黑色
+        oled.text('AutoDecocting', 0, 0)
+        oled.text('Temp: '+str('%.2f'%temp)+' C',0,15)
+        if temp > 98.0:
+            global is_boil
+            is_boil = 1
+        else:
+            global is_boil
+            is_boil = 0
+        oled.show()
+temp_task = Task(temp_get)
 
 
 
 #遥控器中断处理函数
 def fun(IR):
-    oled.fill(0)
     global info
     key = getkey()
     if key != None and key != 'REPEAT':
+        Beep.freq(500)
+        time.sleep_ms(200)
+        Beep.freq(0)
         if info != 'start' and key == 69:
-            global timer_main
-            global tim
-            timer_main.init(period=1000, mode=Timer.PERIODIC,callback=start_decocting)
-            tim.init(period=2000, mode=Timer.PERIODIC,callback=temp_get)
+            temp_task.start()
+            decocting_task.start()
             info = 'start'
             oled.text("start",0,30)
         if info == 'start' and key == 70:
-            global timer_main
-            global tim
-            timer_main.deinit()
-            tim.deinit()
+            global time_count
+            temp_task.stop()
+            decocting_task.stop()
+            time_count = 0
+            s.Step(0,stepper_count,1,4,50)
             info = 'pause'
             oled.text("pause",0,30)
-    print(key)
 IR.irq(fun,Pin.IRQ_FALLING) #定义中断，下降沿触发
 
 
-def ble_send(ble_send_timer):
-    if p.is_connected():
-        p.send('c'+str('%.2f'%temp)+';'+'t'+str(time_count))
-
+def ble_send():
+    while 1:
+        if p.is_connected():
+            p.send('c'+str('%.2f'%temp)+';'+'t'+str(time_count)+';'+'l'+str(order)+';s'+info)
+        utime.sleep_ms(1000)
+ble_send_task = Task(ble_send)
+ble_send_task.start()
 
 oneshot_param = 0
 while 1:      
@@ -292,12 +292,10 @@ while 1:
     if p.is_connected() and oneshot_param == 0:
         led.value(1)
         oled.text("APP connected",0,45)
-        ble_send_timer.init(period=1000, mode=Timer.PERIODIC,callback=ble_send)
         oneshot_param = 1
     elif not p.is_connected() and oneshot_param == 1:
         led.value(0)
         oled.text("APP disconnected",0,45)
-        ble_send_timer.deinit()
         oneshot_param = 0
     oled.show()
     utime.sleep_ms(100)
