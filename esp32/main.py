@@ -109,24 +109,23 @@ order = 0
 is_boil = 0
 time_count = 0
 time_contin_count = 0
+timer_main = Timer(0)
+timer_temp = Timer(1)
 timer_oneshot_task = Timer(2)
 timer_contin_task = Timer(3)
 
-def start_decocting():
+def start_decocting(timer_main):
     global time_count
     global is_active
-    while 1:
-        time_count += 1
-        if is_active:
-            if order == 1 or order == 5 or order == 9:
-                timer_oneshot_task.init(period=1000, mode=Timer.ONE_SHOT,callback=oneshot_task)
-                pass
-            elif order == 2 or order == 3 or order == 4:
-                timer_contin_task.init(period=1000, mode=Timer.PERIODIC,callback=contin_task)
-                pass
+    time_count += 1
+    if is_active:
+        if order == 1 or order == 5 or order == 9:
+            timer_oneshot_task.init(period=1000, mode=Timer.ONE_SHOT,callback=oneshot_task)
             pass
-        utime.sleep_ms(1000)
-decocting_task = Task(start_decocting)
+        elif order == 2 or order == 3 or order == 4:
+            timer_contin_task.init(period=1000, mode=Timer.PERIODIC,callback=contin_task)
+            pass
+        pass
 
 def oneshot_task(timer_oneshot_task):
     global is_active
@@ -184,27 +183,54 @@ ds = ds18x20.DS18X20(ow) #传感器是 DS18B20
 rom = ds.scan() #扫描单总线上的传感器地址，支持多个传感器同时连接
 
 
+def start_():
+    global is_active
+    global order
+    global info
+    timer_main.init(period=1000, mode=Timer.PERIODIC,callback=start_decocting)
+    timer_temp.init(period=1000, mode=Timer.PERIODIC,callback=temp_get)
+    order = 1
+    is_active = True
+    info = 'start'
+    oled.text("start",0,30)
+
+
+def quit_():
+    global is_active
+    global time_count
+    global stepper_count
+    global time_contin_count
+    global order
+    global info
+    is_active = False
+    order = 0
+    timer_main.deinit()
+    timer_temp.deinit()
+    relay.value(1)
+    time_count = 0
+    time_contin_count = 0
+    timer_contin_task.deinit()
+    timer_oneshot_task.deinit()
+    s.Step(0,stepper_count,1,4,50)
+    stepper_count = 0
+    info = 'quit'
+    oled.text("quit",0,30)
+
+
 #蓝牙接受数据处理
 def on_rx(v):
     global order
     global is_active
+    global info
     Beep.freq(500)
-    time.sleep_ms(200)
+    time.sleep_ms(300)
     Beep.freq(0)
     oled.fill(0)
     #print(v[0])
     #print("Receive_data:", str(v))
     if v==b'start':
-        global info
         if info != 'start':
-            global timer_main
-            global tim
-            decocting_task.start()
-            temp_task.start()
-            order = 1
-            is_active = True
-            info = 'start'
-            oled.text("start",0,30)
+            start_()
     elif v==b'pause':
         global info
         info = 'pause'
@@ -212,45 +238,27 @@ def on_rx(v):
     elif v==b'quit':
         global info
         if info == 'start':
-            order = 0
-            global time_count
-            global stepper_count
-            global time_contin_count
-            global order
-            decocting_task.stop()
-            temp_task.stop()
-            order = 0
-            relay.value(1)
-            time_count = 0
-            time_contin_count = 0
-            timer_contin_task.deinit()
-            timer_oneshot_task.deinit()
-            s.Step(0,stepper_count,1,4,50)
-            stepper_count = 0
-            info = 'quit'
-            oled.text("quit",0,30)
+            quit_()
 p.on_write(on_rx)
 
 
 #温度传感器数据处理
 
-def temp_get():
-    while 1:
-        ds.convert_temp()
-        global temp
-        temp = ds.read_temp(rom[0]) #温度显示,rom[0]为第 1 个 DS18B20
-        #OLED 数据显示
-        oled.fill(0)#清屏背景黑色
-        oled.text('AutoDecocting', 0, 0)
-        oled.text('Temp: '+str('%.2f'%temp)+' C',0,15)
-        if temp > 98.0:
-            global is_boil
-            is_boil = 1
-        else:
-            global is_boil
-            is_boil = 0
-        oled.show()
-temp_task = Task(temp_get)
+def temp_get(timer_temp):
+    ds.convert_temp()
+    global temp
+    temp = ds.read_temp(rom[0]) #温度显示,rom[0]为第 1 个 DS18B20
+    #OLED 数据显示
+    oled.fill(0)#清屏背景黑色
+    oled.text('AutoDecocting', 0, 0)
+    oled.text('Temp: '+str('%.2f'%temp)+' C',0,15)
+    if temp > 98.0:
+        global is_boil
+        is_boil = 1
+    else:
+        global is_boil
+        is_boil = 0
+    oled.show()
 
 
 
@@ -260,21 +268,12 @@ def fun(IR):
     key = getkey()
     if key != None and key != 'REPEAT':
         Beep.freq(500)
-        time.sleep_ms(200)
+        time.sleep_ms(300)
         Beep.freq(0)
         if info != 'start' and key == 69:
-            temp_task.start()
-            decocting_task.start()
-            info = 'start'
-            oled.text("start",0,30)
+            start_()
         if info == 'start' and key == 70:
-            global time_count
-            temp_task.stop()
-            decocting_task.stop()
-            time_count = 0
-            s.Step(0,stepper_count,1,4,50)
-            info = 'pause'
-            oled.text("pause",0,30)
+            quit_()
 IR.irq(fun,Pin.IRQ_FALLING) #定义中断，下降沿触发
 
 
