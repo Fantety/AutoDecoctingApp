@@ -100,7 +100,7 @@ void BluetoothSearch::onConnectToService(int idx)
 
 void BluetoothSearch::onStartDecocting()
 {
-    qDebug()<<"开始煎药";
+    //qDebug()<<"开始煎药";
     QByteArray data;
     data =  QByteArray(QString("start").toLatin1());
     bleInterface->write(data);
@@ -108,7 +108,7 @@ void BluetoothSearch::onStartDecocting()
 
 void BluetoothSearch::onPauseDecocting()
 {
-    qDebug()<<"开始煎药";
+    //qDebug()<<"开始煎药";
     QByteArray data;
     data =  QByteArray(QString("pause").toLatin1());
     bleInterface->write(data);
@@ -117,7 +117,7 @@ void BluetoothSearch::onPauseDecocting()
 
 void BluetoothSearch::onQuitDecocting()
 {
-    qDebug()<<"开始煎药";
+    //qDebug()<<"开始煎药";
     QByteArray data;
     data =  QByteArray(QString("quit").toLatin1());
     bleInterface->write(data);

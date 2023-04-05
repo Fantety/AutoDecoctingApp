@@ -100,9 +100,9 @@ CONSTANT_TEMP = 10
 #加入中煎5
 #烧开6
 #恒温7
-#浓缩8
-#下入后煎9
-#沸煮10
+#下入后煎8
+CONCENTRATION_TIME = 10
+#浓缩9
 #结束11
 is_active = False
 order = 0
@@ -110,7 +110,7 @@ is_boil = 0
 time_count = 0
 time_contin_count = 0
 timer_main = Timer(0)
-timer_temp = Timer(1)
+#timer_temp = Timer(1)
 timer_oneshot_task = Timer(2)
 timer_contin_task = Timer(3)
 
@@ -119,10 +119,10 @@ def start_decocting(timer_main):
     global is_active
     time_count += 1
     if is_active:
-        if order == 1 or order == 5 or order == 9:
+        if order == 1 or order == 5 or order == 8:
             timer_oneshot_task.init(period=1000, mode=Timer.ONE_SHOT,callback=oneshot_task)
             pass
-        elif order == 2 or order == 3 or order == 4:
+        elif order == 2 or order == 3 or order == 4 or order == 6 or order == 7 or order == 8 or order == 10:
             timer_contin_task.init(period=1000, mode=Timer.PERIODIC,callback=contin_task)
             pass
         pass
@@ -153,7 +153,7 @@ def contin_task(timer_contin_task):
             timer_contin_task.deinit()
             pass 
         pass
-    elif order == 3:
+    elif order == 3 or order == 6:
         relay.value(0)
         if is_boil == 1:
             time_contin_count = 0
@@ -161,7 +161,7 @@ def contin_task(timer_contin_task):
             order += 1
             timer_contin_task.deinit()
             pass
-    elif order == 4:
+    elif order == 4 or order == 7:
         if time_contin_count >= CONSTANT_TEMP:
             time_contin_count = 0
             is_active = True
@@ -169,6 +169,17 @@ def contin_task(timer_contin_task):
             timer_contin_task.deinit()
             pass 
         pass
+    elif order == 9:
+        relay.value(0)
+        if time_contin_count >= CONCENTRATION_TIME:
+            time_contin_count = 0
+            is_active = True
+            order += 1
+            timer_contin_task.deinit()
+            pass 
+        pass
+    elif order == 10:
+        quit_()
     pass
 
 def rotate_stepper():
@@ -187,10 +198,10 @@ def start_():
     global is_active
     global order
     global info
-    timer_main.init(period=1000, mode=Timer.PERIODIC,callback=start_decocting)
-    timer_temp.init(period=1000, mode=Timer.PERIODIC,callback=temp_get)
-    order = 1
+    order += 1
     is_active = True
+    timer_main.init(period=1000, mode=Timer.PERIODIC,callback=start_decocting)
+    #timer_temp.init(period=1000, mode=Timer.PERIODIC,callback=temp_get)
     info = 'start'
     oled.text("start",0,30)
 
@@ -205,7 +216,7 @@ def quit_():
     is_active = False
     order = 0
     timer_main.deinit()
-    timer_temp.deinit()
+    #timer_temp.deinit()
     relay.value(1)
     time_count = 0
     time_contin_count = 0
@@ -243,23 +254,19 @@ p.on_write(on_rx)
 
 
 #温度传感器数据处理
-
-def temp_get(timer_temp):
+def temp_get():
     ds.convert_temp()
     global temp
+    global is_boil
     temp = ds.read_temp(rom[0]) #温度显示,rom[0]为第 1 个 DS18B20
     #OLED 数据显示
-    oled.fill(0)#清屏背景黑色
-    oled.text('AutoDecocting', 0, 0)
-    oled.text('Temp: '+str('%.2f'%temp)+' C',0,15)
     if temp > 98.0:
-        global is_boil
         is_boil = 1
     else:
-        global is_boil
         is_boil = 0
     oled.show()
-
+temp_get_task = Task(temp_get,1)
+temp_get_task.start()
 
 
 #遥控器中断处理函数
@@ -278,15 +285,15 @@ IR.irq(fun,Pin.IRQ_FALLING) #定义中断，下降沿触发
 
 
 def ble_send():
-    while 1:
-        if p.is_connected():
-            p.send('c'+str('%.2f'%temp)+';'+'t'+str(time_count)+';'+'l'+str(order)+';s'+info)
-        utime.sleep_ms(1000)
-ble_send_task = Task(ble_send)
+    if p.is_connected():
+        p.send('c'+str('%.2f'%temp)+';'+'t'+str(time_count)+';'+'l'+str(order)+';s'+info)
+ble_send_task = Task(ble_send,1)
 ble_send_task.start()
 
 oneshot_param = 0
-while 1:      
+while 1: 
+    oled.text('AutoDecocting', 0, 0)
+    oled.text('Temp: '+str('%.2f'%temp)+' C',0,15)     
     oled.text(info,0,30)
     if p.is_connected() and oneshot_param == 0:
         led.value(1)
@@ -298,3 +305,5 @@ while 1:
         oneshot_param = 0
     oled.show()
     utime.sleep_ms(100)
+    oled.fill(0)#清屏背景黑色
+
