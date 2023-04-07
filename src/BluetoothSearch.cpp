@@ -47,10 +47,15 @@ void BluetoothSearch::dataReceived(QByteArray data)
     }
 }
 
-void BluetoothSearch::onSaveParam(int soak_time, int first_temp, int middle_temp)
+void BluetoothSearch::onSaveParam(int soak_time, int constant_temp,int constant_time, int concentration_time, int stepper_value)
 {
     QByteArray data;
-    data =  QByteArray(QString("p"+QString::number(soak_time)+","+QString::number(first_temp)+","+QString::number(middle_temp)).toLatin1());
+    //p[浸泡时间],[恒温温度],[恒温时间],[浓缩时间],[电机步距]
+    data =  QByteArray(QString("p"+QString::number(soak_time)+","
+                               +QString::number(constant_temp)+","
+                               +QString::number(constant_time)+","
+                               +QString::number(concentration_time)+","
+                               +QString::number(stepper_value)).toLatin1());
     bleInterface->write(data);
 }
 

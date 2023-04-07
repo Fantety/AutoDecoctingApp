@@ -200,7 +200,7 @@ Window {
         }
 
         Page{
-            signal save_param(int soak_time, int first_temp, int middle_temp)
+            signal save_param(int soak_time, int constant_temp,int constant_time, int concentration_time, int stepper_value)
             id: setting_page;
             visible: false;
             anchors.fill: parent;
@@ -243,23 +243,23 @@ Window {
                     anchors.horizontalCenter: parent.horizontalCenter;
                     Text{
                         anchors.verticalCenter: parent.verticalCenter;
-                        text:"先煎恒温(摄氏)";
+                        text:"恒温温度(摄氏)";
                         color:"white";
                         font.pixelSize: 16;
                     }
                     Slider{
-                        id: first_temp;
+                        id: constant_temp;
                         stepSize: 1;
                         from: 70
                         value: 75
                         to: 80
                         width: 100;
                         onMoved: {
-                            first_temp_value.text = first_temp.value.toString();
+                            constant_temp_value.text = constant_temp.value.toString();
                         }
                     }
                     Text{
-                        id: first_temp_value;
+                        id: constant_temp_value;
                         color:"white";
                         anchors.verticalCenter: parent.verticalCenter;
                         text:"75";
@@ -270,27 +270,81 @@ Window {
                     anchors.horizontalCenter: parent.horizontalCenter;
                     Text{
                         anchors.verticalCenter: parent.verticalCenter;
-                        text:"中煎恒温(摄氏)";
+                        text:"恒温时间(摄氏)";
                         font.pixelSize: 16;
                         color:"white";
                     }
                     Slider{
-                        id: middle_temp;
+                        id: constant_time;
                         stepSize: 1;
-                        from: 70
-                        value: 75
-                        to: 80
+                        from: 10
+                        value: 15
+                        to: 60
                         width: 100;
                         onMoved: {
-                            middle_temp_value.text = middle_temp.value.toString();
+                            constant_time_value.text = constant_time.value.toString();
                         }
                     }
                     Text{
-                        id: middle_temp_value;
+                        id: constant_time_value;
                         anchors.verticalCenter: parent.verticalCenter;
                         text:"75";
                         color:"white";
                         font.pixelSize: 16;
+                    }
+                }
+                Row{
+                    anchors.horizontalCenter: parent.horizontalCenter;
+                    Text{
+                        anchors.verticalCenter: parent.verticalCenter;
+                        text:"浓缩时间(分钟)";
+                        font.pixelSize: 16;
+                        color:"white";
+                    }
+                    Slider{
+                        id: concentration_time;
+                        stepSize: 1;
+                        from: 10
+                        value: 15
+                        to: 60
+                        width: 100;
+                        onMoved: {
+                            concentration_time_value.text = concentration_time.value.toString();
+                        }
+                    }
+                    Text{
+                        id: concentration_time_value;
+                        anchors.verticalCenter: parent.verticalCenter;
+                        text:"40";
+                        font.pixelSize: 16;
+                        color:"white";
+                    }
+                }
+                Row{
+                    anchors.horizontalCenter: parent.horizontalCenter;
+                    Text{
+                        anchors.verticalCenter: parent.verticalCenter;
+                        text:"电机步距";
+                        font.pixelSize: 16;
+                        color:"white";
+                    }
+                    Slider{
+                        id: stepper_value;
+                        stepSize: 0.5;
+                        from: 12.5
+                        value: 12.5
+                        to: 200
+                        width: 100;
+                        onMoved: {
+                            stepper_value_value.text = stepper_value.value.toString();
+                        }
+                    }
+                    Text{
+                        id: stepper_value_value;
+                        anchors.verticalCenter: parent.verticalCenter;
+                        text:"40";
+                        font.pixelSize: 16;
+                        color:"white";
                     }
                 }
                 RoundButton{
@@ -303,7 +357,7 @@ Window {
                     font.pixelSize: 16;
                     Material.background: Material.Purple;
                     onClicked: {
-                        setting_page.save_param(soak_time.value, first_temp.value, middle_temp.value)
+                        setting_page.save_param(soak_time.value, constant_temp.value, constant_time.value, concentration_time.value, stepper_value.value)
                         setting_page.visible = false;
                     }
                 }

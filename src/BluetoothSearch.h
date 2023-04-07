@@ -50,7 +50,7 @@ public slots:
     void onPauseDecocting();
     void onQuitDecocting();
     void dataReceived(QByteArray data);
-    void onSaveParam(int soak_time, int first_temp, int middle_temp);
+    void onSaveParam(int soak_time, int constant_temp,int constant_time, int concentration_time, int stepper_value);
     void onDeviceDisconnected(QString info, bool isGood);
 };
 

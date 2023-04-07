@@ -97,6 +97,7 @@ SOAK_TIME = 10
 #烧开3
 #恒温4
 CONSTANT_TEMP = 10
+CONSTANT_TIME = 10
 #加入中煎5
 #烧开6
 #恒温7
@@ -104,6 +105,8 @@ CONSTANT_TEMP = 10
 CONCENTRATION_TIME = 10
 #浓缩9
 #结束11
+
+STEPPER_VALUE = 12.5
 is_active = False
 order = 0
 is_boil = 0
@@ -162,7 +165,7 @@ def contin_task(timer_contin_task):
             timer_contin_task.deinit()
             pass
     elif order == 4 or order == 7:
-        if time_contin_count >= CONSTANT_TEMP:
+        if time_contin_count >= CONSTANT_TIME:
             time_contin_count = 0
             is_active = True
             order += 1
@@ -184,8 +187,8 @@ def contin_task(timer_contin_task):
 
 def rotate_stepper():
     global stepper_count
-    s.Step(0,12.5,0,4,50)
-    stepper_count += 12.5
+    s.Step(0,STEPPER_VALUE,0,4,50)
+    stepper_count += STEPPER_VALUE
 
 
 #温度传感器相关模块初始化
@@ -250,6 +253,20 @@ def on_rx(v):
         global info
         if info == 'start':
             quit_()
+    #p[浸泡时间],[恒温温度],[恒温时间],[浓缩时间],[电机步距]
+    elif str(v)[0] == 'p':
+        p_list = str(v)[1:].split(',')
+        global STEPPER_VALUE
+        global SOAK_TIME
+        global CONSTANT_TEMP
+        global CONCENTRATION_TIME
+        global CONSTANT_TIME
+        SOAK_TIME = int(p_list[0])
+        CONSTANT_TEMP = int(p_list[1])
+        CONSTANT_TIME = int(p_list[2])
+        CONCENTRATION_TIME = int(p_list[3])
+        STEPPER_VALUE = int(p_list[4])
+        pass
 p.on_write(on_rx)
 
 
