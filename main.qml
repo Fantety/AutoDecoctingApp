@@ -288,7 +288,7 @@ Window {
                     Text{
                         id: constant_time_value;
                         anchors.verticalCenter: parent.verticalCenter;
-                        text:"75";
+                        text:"15";
                         color:"white";
                         font.pixelSize: 16;
                     }
@@ -315,7 +315,7 @@ Window {
                     Text{
                         id: concentration_time_value;
                         anchors.verticalCenter: parent.verticalCenter;
-                        text:"40";
+                        text:"15";
                         font.pixelSize: 16;
                         color:"white";
                     }
@@ -342,7 +342,7 @@ Window {
                     Text{
                         id: stepper_value_value;
                         anchors.verticalCenter: parent.verticalCenter;
-                        text:"40";
+                        text:"12.5";
                         font.pixelSize: 16;
                         color:"white";
                     }
@@ -358,6 +358,19 @@ Window {
                     Material.background: Material.Purple;
                     onClicked: {
                         setting_page.save_param(soak_time.value, constant_temp.value, constant_time.value, concentration_time.value, stepper_value.value)
+                        setting_page.visible = false;
+                    }
+                }
+                RoundButton{
+                    anchors.horizontalCenter: parent.horizontalCenter;
+                    id: cancel_button;
+                    width: 200;
+                    height: 50;
+                    radius: 10;
+                    text: "取消";
+                    font.pixelSize: 16;
+                    Material.background: Material.Red;
+                    onClicked: {
                         setting_page.visible = false;
                     }
                 }

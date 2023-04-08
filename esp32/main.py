@@ -113,7 +113,6 @@ is_boil = 0
 time_count = 0
 time_contin_count = 0
 timer_main = Timer(0)
-#timer_temp = Timer(1)
 timer_oneshot_task = Timer(2)
 timer_contin_task = Timer(3)
 
@@ -136,7 +135,7 @@ def oneshot_task(timer_oneshot_task):
     global time_contin_count
     time_contin_count = 0
     is_active = False
-    rotate_stepper()
+    rotate_stepper_task.start()
     order += 1
     is_active = True
     timer_oneshot_task.deinit()
@@ -165,6 +164,7 @@ def contin_task(timer_contin_task):
             timer_contin_task.deinit()
             pass
     elif order == 4 or order == 7:
+        do_constant_temp()
         if time_contin_count >= CONSTANT_TIME:
             time_contin_count = 0
             is_active = True
@@ -187,10 +187,18 @@ def contin_task(timer_contin_task):
 
 def rotate_stepper():
     global stepper_count
-    s.Step(0,STEPPER_VALUE,0,4,50)
+    s.Step(0,STEPPER_VALUE,0,4,40)
     stepper_count += STEPPER_VALUE
+    
+rotate_stepper_task = Task(rotate_stepper)
 
 
+
+def do_constant_temp():
+    if temp >= CONSTANT_TEMP+3:
+        relay.value(1)
+    elif temp <= CONSTANT_TEMP-3:
+        relay.value(0)
 #温度传感器相关模块初始化
 ow= onewire.OneWire(Pin(22)) #使能单总线
 ds = ds18x20.DS18X20(ow) #传感器是 DS18B20
@@ -241,7 +249,7 @@ def on_rx(v):
     Beep.freq(0)
     oled.fill(0)
     #print(v[0])
-    #print("Receive_data:", str(v))
+    print("Receive_data:", str(v.decode()))
     if v==b'start':
         if info != 'start':
             start_()
@@ -254,8 +262,8 @@ def on_rx(v):
         if info == 'start':
             quit_()
     #p[浸泡时间],[恒温温度],[恒温时间],[浓缩时间],[电机步距]
-    elif str(v)[0] == 'p':
-        p_list = str(v)[1:].split(',')
+    elif str(v.decode())[:1] == 'p':
+        p_list = str(v.decode())[1:].split(',')
         global STEPPER_VALUE
         global SOAK_TIME
         global CONSTANT_TEMP
@@ -265,7 +273,7 @@ def on_rx(v):
         CONSTANT_TEMP = int(p_list[1])
         CONSTANT_TIME = int(p_list[2])
         CONCENTRATION_TIME = int(p_list[3])
-        STEPPER_VALUE = int(p_list[4])
+        STEPPER_VALUE = float(p_list[4])
         pass
 p.on_write(on_rx)
 
@@ -307,20 +315,20 @@ def ble_send():
 ble_send_task = Task(ble_send,1)
 ble_send_task.start()
 
-oneshot_param = 0
 while 1: 
     oled.text('AutoDecocting', 0, 0)
     oled.text('Temp: '+str('%.2f'%temp)+' C',0,15)     
     oled.text(info,0,30)
-    if p.is_connected() and oneshot_param == 0:
+    if p.is_connected():
         led.value(1)
         oled.text("APP connected",0,45)
-        oneshot_param = 1
-    elif not p.is_connected() and oneshot_param == 1:
+    elif not p.is_connected():
         led.value(0)
         oled.text("APP disconnected",0,45)
-        oneshot_param = 0
     oled.show()
     utime.sleep_ms(100)
     oled.fill(0)#清屏背景黑色
+
+
+
 

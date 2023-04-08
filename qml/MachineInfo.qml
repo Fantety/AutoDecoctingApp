@@ -62,7 +62,7 @@ Rectangle{
                     Text {
                         id: temp_num;
                         anchors.centerIn: parent;
-                        text: qsTr("37");
+                        text: qsTr("无数据");
                         font.pixelSize: 24;
                         color:"#eef7f2";
                     }
@@ -105,7 +105,7 @@ Rectangle{
                     color:"#132c33";
                     Text {
                         anchors.centerIn: parent;
-                        text: qsTr("37");
+                        text: qsTr("无数据");
                         font.pixelSize: 24;
                         color:"#eef7f2";
                     }
@@ -150,7 +150,7 @@ Rectangle{
                     Text {
                         id: used_time_time;
                         anchors.centerIn: parent;
-                        text: qsTr("37");
+                        text: qsTr("无数据");
                         font.pixelSize: 24;
                         color:"#e2e1e4";
                     }
@@ -194,7 +194,7 @@ Rectangle{
                     color:"#131124";
                     Text {
                         anchors.centerIn: parent;
-                        text: qsTr("37");
+                        text: qsTr("无数据");
                         font.pixelSize: 24;
                         color:"#e2e1e4";
                     }
