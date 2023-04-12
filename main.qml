@@ -331,9 +331,9 @@ Window {
                     Slider{
                         id: stepper_value;
                         stepSize: 0.5;
-                        from: 12.5
+                        from: 0
                         value: 12.5
-                        to: 200
+                        to: 50
                         width: 100;
                         onMoved: {
                             stepper_value_value.text = stepper_value.value.toString();
