@@ -40,6 +40,13 @@ void BluetoothSearch::dataReceived(QByteArray data)
         }
         if(list[1].front() == 't'){
             emit sendTime(secondToTime(list[1].mid(1).toInt()));
+            int surt = totalTime-list[1].mid(1).toInt();
+            if(surt>0){
+                emit sendSurplusTime(secondToTime(surt));
+            }else{
+                emit sendSurplusTime(secondToTime(surt+60));
+            }
+
         }
         if(list[2].front() == 'l' and list[3].front() == 's'){
             emit sendInfoTerminal("阶段: "+list[2].mid(1)+"/状态: "+list[3].mid(1));
@@ -56,6 +63,7 @@ void BluetoothSearch::onSaveParam(int soak_time, int constant_temp,int constant_
                                +QString::number(constant_time)+","
                                +QString::number(concentration_time)+","
                                +QString::number(stepper_value)).toLatin1());
+    totalTime = (soak_time+constant_time*2+30+10+1+concentration_time)*60;
     bleInterface->write(data);
 }
 
@@ -117,7 +125,6 @@ void BluetoothSearch::onPauseDecocting()
     QByteArray data;
     data =  QByteArray(QString("pause").toLatin1());
     bleInterface->write(data);
-
 }
 
 void BluetoothSearch::onQuitDecocting()
@@ -126,6 +133,5 @@ void BluetoothSearch::onQuitDecocting()
     QByteArray data;
     data =  QByteArray(QString("quit").toLatin1());
     bleInterface->write(data);
-
 }
 

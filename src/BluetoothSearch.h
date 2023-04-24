@@ -10,6 +10,8 @@ class BluetoothSearch : public QObject
     BLEInterface *bleInterface;
     int qTime = 0;
 
+    int totalTime = 106*60;
+    //20+30+15+10+15+15+1
 
 public:
 
@@ -40,6 +42,7 @@ signals:
     void sendInfoTerminal(QString msg);
     void sendTemp(QString temp);
     void sendTime(QString time);
+    void sendSurplusTime(QString time);
     void sendClearDeviceItem();
     void changeRoundButtonText(QString text);
 public slots:

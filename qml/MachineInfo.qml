@@ -20,6 +20,10 @@ Rectangle{
         used_time_time.text = time;
     }
 
+    function set_surplus_time(time){
+        surplus_time_time.text = time;
+    }
+
     Column{
         spacing: 10;
         anchors.fill: parent;
@@ -193,6 +197,7 @@ Rectangle{
                     anchors.verticalCenter: parent.verticalCenter;
                     color:"#131124";
                     Text {
+                        id: surplus_time_time;
                         anchors.centerIn: parent;
                         text: qsTr("无数据");
                         font.pixelSize: 24;

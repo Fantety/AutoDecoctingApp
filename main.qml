@@ -143,6 +143,7 @@ Window {
                 blue_tooth_search.sendInfoTerminal.connect(info_rect.set_info_terminal_msg)
                 blue_tooth_search.sendTemp.connect(machine_info.set_temp)
                 blue_tooth_search.sendTime.connect(machine_info.set_time)
+                blue_tooth_search.sendSurplusTime.connect(machine_info.set_surplus_time)
                 blue_tooth_search.changeRoundButtonText.connect(round_button.change_round_button_text)
 
             }
@@ -223,8 +224,8 @@ Window {
                     Slider{
                         id: soak_time;
                         stepSize: 1;
-                        from: 30
-                        value: 40
+                        from: 10
+                        value: 20
                         to: 60
                         width: 100;
                         onMoved: {
@@ -234,7 +235,7 @@ Window {
                     Text{
                         id: soak_time_value;
                         anchors.verticalCenter: parent.verticalCenter;
-                        text:"40";
+                        text:"20";
                         font.pixelSize: 16;
                         color:"white";
                     }

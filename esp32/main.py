@@ -157,6 +157,8 @@ def contin_task(timer_contin_task):
         pass
     elif order == 3 or order == 6:
         relay.value(0)
+        if time_contin_count>20*60 and temp<40:
+            quit_();
         if is_boil == 1:
             time_contin_count = 0
             is_active = True
@@ -227,7 +229,6 @@ def quit_():
     is_active = False
     order = 0
     timer_main.deinit()
-    #timer_temp.deinit()
     relay.value(1)
     time_count = 0
     time_contin_count = 0
