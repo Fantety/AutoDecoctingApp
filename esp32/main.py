@@ -93,16 +93,16 @@ relay=Pin(32,Pin.OUT,value=1)
 #流程计时相关
 #下入先煎1
 #浸泡2
-SOAK_TIME = 10
+SOAK_TIME = 15
 #烧开3
 #恒温4
-CONSTANT_TEMP = 10
-CONSTANT_TIME = 10
+CONSTANT_TEMP = 98
+CONSTANT_TIME = 15
 #加入中煎5
 #烧开6
 #恒温7
 #下入后煎8
-CONCENTRATION_TIME = 10
+CONCENTRATION_TIME = 15
 #浓缩9
 #结束11
 
@@ -148,7 +148,7 @@ def contin_task(timer_contin_task):
     is_active = False
     time_contin_count += 1
     if order == 2:
-        if time_contin_count >= SOAK_TIME:
+        if time_contin_count >= SOAK_TIME*60:
             time_contin_count = 0
             is_active = True
             order += 1
@@ -157,8 +157,6 @@ def contin_task(timer_contin_task):
         pass
     elif order == 3 or order == 6:
         relay.value(0)
-        if time_contin_count>20*60 and temp<40:
-            quit_();
         if is_boil == 1:
             time_contin_count = 0
             is_active = True
@@ -167,7 +165,7 @@ def contin_task(timer_contin_task):
             pass
     elif order == 4 or order == 7:
         do_constant_temp()
-        if time_contin_count >= CONSTANT_TIME:
+        if time_contin_count >= CONSTANT_TIME*60:
             time_contin_count = 0
             is_active = True
             order += 1
@@ -176,7 +174,7 @@ def contin_task(timer_contin_task):
         pass
     elif order == 9:
         relay.value(0)
-        if time_contin_count >= CONCENTRATION_TIME:
+        if time_contin_count >= CONCENTRATION_TIME*60:
             time_contin_count = 0
             is_active = True
             order += 1
@@ -197,9 +195,9 @@ rotate_stepper_task = Task(rotate_stepper)
 
 
 def do_constant_temp():
-    if temp >= CONSTANT_TEMP+3:
+    if temp >= CONSTANT_TEMP+2:
         relay.value(1)
-    elif temp <= CONSTANT_TEMP-3:
+    elif temp <= CONSTANT_TEMP-2:
         relay.value(0)
 #温度传感器相关模块初始化
 ow= onewire.OneWire(Pin(22)) #使能单总线
@@ -229,6 +227,7 @@ def quit_():
     is_active = False
     order = 0
     timer_main.deinit()
+    #timer_temp.deinit()
     relay.value(1)
     time_count = 0
     time_contin_count = 0
@@ -329,7 +328,5 @@ while 1:
     oled.show()
     utime.sleep_ms(100)
     oled.fill(0)#清屏背景黑色
-
-
 
 
